@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -ex
+
+# Record the resolved environment, per AIND software practices.
+pip list > /results/pip_list.txt
+
+python -u run_capsule.py "$@"

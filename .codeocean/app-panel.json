@@ -1,0 +1,26 @@
+{
+	"version": 1,
+	"parameters": [
+		{
+			"id": "parentasset000001",
+			"name": "parent_asset",
+			"description": "Name of the imaging asset the reconstructions derive from. Inferred from the alignment stage record when blank.",
+			"type": "text",
+			"value_type": "string"
+		},
+		{
+			"id": "modalities0000001",
+			"name": "modalities",
+			"description": "Comma-separated modality abbreviations, used when the parent omits them (default SPIM)",
+			"type": "text",
+			"value_type": "string"
+		},
+		{
+			"id": "experimenters00001",
+			"name": "experimenters",
+			"description": "Comma-separated names recorded on the packaging step (default Peter Grotz)",
+			"type": "text",
+			"value_type": "string"
+		}
+	]
+}
