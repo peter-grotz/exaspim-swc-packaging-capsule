@@ -5,7 +5,6 @@ reads the capsule's inputs, calls the library, and reports what happened.
 """
 
 import argparse
-import json
 import logging
 import os
 import sys
@@ -14,7 +13,8 @@ from pathlib import Path
 
 from aind_data_schema.components.identifiers import Code
 from aind_data_schema.core.processing import DataProcess
-from exaspim_swc_processing.packaging import build_packaging_process, package_cells
+
+from exaspim_swc_processing.packaging import package_cells
 from exaspim_swc_processing.parent_metadata import (
     ParentMetadataNotFoundError,
     resolve_parent_metadata,
@@ -55,7 +55,6 @@ def parse_args() -> argparse.Namespace:
         default=os.environ.get("MODALITIES", "SPIM"),
         help="Comma-separated modality abbreviations, used when the parent omits them.",
     )
-    parser.add_argument("--experimenters", default=os.environ.get("EXPERIMENTERS", ""))
     return parser.parse_args()
 
 
@@ -127,9 +126,7 @@ def run() -> int:
     logger.info("Parent asset: %s", parent_asset)
 
     try:
-        parent = resolve_parent_metadata(
-            parent_asset, default_sources(), upgrade_data_description
-        )
+        parent = resolve_parent_metadata(parent_asset, default_sources(), upgrade_data_description)
     except ParentMetadataNotFoundError as error:
         logger.error("%s", error)
         return 1
@@ -144,18 +141,6 @@ def run() -> int:
     if not parent.data_description.modalities and args.modalities:
         overrides["modalities"] = [m.strip() for m in args.modalities.split(",") if m.strip()]
 
-    experimenters = [e.strip() for e in args.experimenters.split(",") if e.strip()]
-    finished = datetime.now(timezone.utc)
-    step = build_packaging_process(
-        parent,
-        pipeline,
-        start_time=started,
-        end_time=finished,
-        output_path=".",
-        cell_count=0,
-        **({"experimenters": experimenters} if experimenters else {}),
-    )
-
     result = package_cells(
         DATA_DIR,
         RESULTS_DIR,
@@ -163,22 +148,11 @@ def run() -> int:
         stage_processes,
         pipeline,
         creation_time=started,
-        packaging_process=step,
         overrides=overrides,
     )
 
-    summary = {
-        "parent_asset": parent_asset,
-        "metadata_source": parent.source.value,
-        "packaged": [cell.asset_name for cell in result.packaged],
-        "skipped": [
-            {"reconstruction": cell.reconstruction.stem, "reason": cell.reason}
-            for cell in result.skipped
-        ],
-    }
-    (RESULTS_DIR / "packaging_summary.json").write_text(
-        json.dumps(summary, indent=2), encoding="utf-8"
-    )
+    for cell in result.skipped:
+        logger.warning("Skipped %s: %s", cell.reconstruction.stem, cell.reason)
     logger.info("Packaged %d cell(s), skipped %d", len(result.packaged), len(result.skipped))
     return 0
 
