@@ -145,13 +145,11 @@ def run() -> int:
 
     experimenters = [e.strip() for e in args.experimenters.split(",") if e.strip()]
 
-    def describe_packaging(cells: int, finished: datetime) -> DataProcess:
-        """Record this packaging step once the cell count and finish time are known.
+    def describe_packaging(finished: datetime) -> DataProcess:
+        """Record this packaging step once the work has finished.
 
         Parameters
         ----------
-        cells : int
-            Number of cells written.
         finished : datetime
             When packaging finished.
 
@@ -166,7 +164,6 @@ def run() -> int:
             start_time=started,
             end_time=finished,
             output_path=".",
-            cell_count=cells,
             **({"experimenters": experimenters} if experimenters else {}),
         )
 
