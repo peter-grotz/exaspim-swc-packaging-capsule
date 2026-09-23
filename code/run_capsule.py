@@ -14,6 +14,7 @@ from pathlib import Path
 
 from aind_data_schema.components.identifiers import Code
 from aind_data_schema.core.processing import DataProcess
+from exaspim_swc_processing.resources import log_peak_memory
 from exaspim_swc_processing.packaging import build_packaging_process, package_cells
 from exaspim_swc_processing.parent_metadata import (
     ParentMetadataNotFoundError,
@@ -180,6 +181,7 @@ def run() -> int:
         json.dumps(summary, indent=2), encoding="utf-8"
     )
     logger.info("Packaged %d cell(s), skipped %d", len(result.packaged), len(result.skipped))
+    log_peak_memory()
     return 0
 
 
