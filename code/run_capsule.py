@@ -14,6 +14,7 @@ from pathlib import Path
 
 from aind_data_schema.components.identifiers import Code
 from aind_data_schema.core.processing import DataProcess
+
 from exaspim_swc_processing.packaging import build_packaging_process, package_cells
 from exaspim_swc_processing.parent_metadata import (
     ParentMetadataNotFoundError,
@@ -127,9 +128,7 @@ def run() -> int:
     logger.info("Parent asset: %s", parent_asset)
 
     try:
-        parent = resolve_parent_metadata(
-            parent_asset, default_sources(), upgrade_data_description
-        )
+        parent = resolve_parent_metadata(parent_asset, default_sources(), upgrade_data_description)
     except ParentMetadataNotFoundError as error:
         logger.error("%s", error)
         return 1
@@ -145,16 +144,31 @@ def run() -> int:
         overrides["modalities"] = [m.strip() for m in args.modalities.split(",") if m.strip()]
 
     experimenters = [e.strip() for e in args.experimenters.split(",") if e.strip()]
-    finished = datetime.now(timezone.utc)
-    step = build_packaging_process(
-        parent,
-        pipeline,
-        start_time=started,
-        end_time=finished,
-        output_path=".",
-        cell_count=0,
-        **({"experimenters": experimenters} if experimenters else {}),
-    )
+
+    def describe_packaging(cells: int, finished: datetime) -> DataProcess:
+        """Record this packaging step once the cell count and finish time are known.
+
+        Parameters
+        ----------
+        cells : int
+            Number of cells written.
+        finished : datetime
+            When packaging finished.
+
+        Returns
+        -------
+        DataProcess
+            The step record embedded in every cell.
+        """
+        return build_packaging_process(
+            parent,
+            pipeline,
+            start_time=started,
+            end_time=finished,
+            output_path=".",
+            cell_count=cells,
+            **({"experimenters": experimenters} if experimenters else {}),
+        )
 
     result = package_cells(
         DATA_DIR,
@@ -163,7 +177,7 @@ def run() -> int:
         stage_processes,
         pipeline,
         creation_time=started,
-        packaging_process=step,
+        describe_packaging=describe_packaging,
         overrides=overrides,
     )
 
