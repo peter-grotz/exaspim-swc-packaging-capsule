@@ -4,4 +4,16 @@ set -ex
 # Record the resolved environment, per AIND software practices.
 pip list > /results/pip_list.txt
 
+# Code Ocean's App Builder passes its parameters as ordered values, not flags:
+#   ./run <parent_asset> <modalities> <experimenters>
+# A direct command-line invocation passes flags instead. Accept both, so the same
+# entry point works from the pipeline and from a shell.
+if [ -n "${1:-}" ] && [ "${1#-}" = "$1" ]; then
+  args=()
+  [ -n "${1:-}" ] && args+=(--parent-asset "${1}")
+  [ -n "${2:-}" ] && args+=(--modalities "${2}")
+  [ -n "${3:-}" ] && args+=(--experimenters "${3}")
+  set -- ${args[@]+"${args[@]}"}
+fi
+
 python -u run_capsule.py "$@"
