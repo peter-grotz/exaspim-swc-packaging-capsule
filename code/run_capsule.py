@@ -82,10 +82,11 @@ def load_stage_processes(data_dir: Path) -> list[DataProcess]:
 
 
 def infer_parent_asset(processes: list[DataProcess]) -> str:
-    """Recover the parent asset name from the alignment stage's parameters.
+    """Recover the parent asset name from the transform stage's record.
 
-    The transform stage records the S3 prefix it staged registration files from, so the
-    parent does not need to be passed in separately.
+    The transform records the dataset it resolved in ``output_parameters`` as
+    ``processed_dataset_name``. That is preferred: the ``processed_dataset`` input is
+    optional and blank whenever the transform resolved the dataset itself.
 
     Parameters
     ----------
@@ -97,10 +98,16 @@ def infer_parent_asset(processes: list[DataProcess]) -> str:
     str
         The parent asset name, or an empty string if it cannot be recovered.
     """
+
+    def as_dict(model: object) -> dict:
+        return (model.model_dump() if hasattr(model, "model_dump") else model) or {}
+
     for process in processes:
-        parameters = getattr(process.code, "parameters", None)
-        values = parameters.model_dump() if hasattr(parameters, "model_dump") else parameters
-        dataset = (values or {}).get("processed_dataset", "")
+        resolved = as_dict(process.output_parameters).get("processed_dataset_name", "")
+        if resolved:
+            return str(resolved)
+    for process in processes:
+        dataset = as_dict(getattr(process.code, "parameters", None)).get("processed_dataset", "")
         if dataset:
             return str(dataset).rstrip("/").removeprefix("s3://").split("/", 1)[-1].split("/")[0]
     return ""
