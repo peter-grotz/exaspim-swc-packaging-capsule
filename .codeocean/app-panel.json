@@ -14,13 +14,6 @@
 			"description": "Comma-separated modality abbreviations, used when the parent omits them (default SPIM)",
 			"type": "text",
 			"value_type": "string"
-		},
-		{
-			"id": "experimenters00001",
-			"name": "experimenters",
-			"description": "Comma-separated names recorded on the packaging step (default Peter Grotz)",
-			"type": "text",
-			"value_type": "string"
 		}
 	]
 }
