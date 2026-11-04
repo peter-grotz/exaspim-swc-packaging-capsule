@@ -10,4 +10,4 @@ COPY git-ask-pass /
 # this command, so '@dev' would reuse a cached layer and silently install nothing
 # new. Bump the SHA whenever the library changes.
 RUN pip install -U --no-cache-dir \
-    "exaspim-swc-processing @ git+https://github.com/peter-grotz/exaspim-swc-processing.git@818a98aac7118257c201036405a09b09505d79ae"
+    "exaspim-swc-processing @ git+https://github.com/peter-grotz/exaspim-swc-processing.git@bcbbc45dcd99158b894d35f651326ca6d9457985"
