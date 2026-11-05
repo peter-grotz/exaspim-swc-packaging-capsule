@@ -20,6 +20,7 @@ from exaspim_swc_processing.parent_metadata import (
     resolve_parent_metadata,
 )
 from exaspim_swc_processing.sources import default_sources, upgrade_data_description
+from exaspim_swc_processing.stage import PROCESSED_DATASET_FILE
 
 DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
 RESULTS_DIR = Path(os.environ.get("RESULTS_DIR", "/results"))
@@ -81,36 +82,21 @@ def load_stage_processes(data_dir: Path) -> list[DataProcess]:
     return processes
 
 
-def infer_parent_asset(processes: list[DataProcess]) -> str:
-    """Recover the parent asset name from the transform stage's record.
-
-    The transform records the dataset it resolved in ``output_parameters`` as
-    ``processed_dataset_name``. That is preferred: the ``processed_dataset`` input is
-    optional and blank whenever the transform resolved the dataset itself.
+def infer_parent_asset(data_dir: Path) -> str:
+    """Read the parent dataset the transform applied, from its hand-off file.
 
     Parameters
     ----------
-    processes : list[DataProcess]
-        Stage records.
+    data_dir : Path
+        Directory the upstream stage outputs are mounted at.
 
     Returns
     -------
     str
-        The parent asset name, or an empty string if it cannot be recovered.
+        The parent asset name, or an empty string if the file is absent.
     """
-
-    def as_dict(model: object) -> dict:
-        return (model.model_dump() if hasattr(model, "model_dump") else model) or {}
-
-    for process in processes:
-        resolved = as_dict(process.output_parameters).get("processed_dataset_name", "")
-        if resolved:
-            return str(resolved)
-    for process in processes:
-        dataset = as_dict(getattr(process.code, "parameters", None)).get("processed_dataset", "")
-        if dataset:
-            return str(dataset).rstrip("/").removeprefix("s3://").split("/", 1)[-1].split("/")[0]
-    return ""
+    path = data_dir / "alignment" / PROCESSED_DATASET_FILE
+    return path.read_text(encoding="utf-8").strip() if path.is_file() else ""
 
 
 def run() -> int:
@@ -126,9 +112,11 @@ def run() -> int:
     started = datetime.now(timezone.utc)
 
     stage_processes = load_stage_processes(DATA_DIR)
-    parent_asset = args.parent_asset or infer_parent_asset(stage_processes)
+    parent_asset = args.parent_asset or infer_parent_asset(DATA_DIR)
     if not parent_asset:
-        logger.error("No parent asset given and none could be inferred from the stage records")
+        logger.error(
+            "No parent asset given, and no alignment/%s from the transform", PROCESSED_DATASET_FILE
+        )
         return 1
     logger.info("Parent asset: %s", parent_asset)
 
