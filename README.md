@@ -19,5 +19,5 @@ when not given.
 
 ## Installation
 
-All logic lives in [exaspim-swc-processing](https://github.com/peter-grotz/exaspim-swc-processing),
+All logic lives in [exaspim-swc-processing](https://github.com/AllenNeuralDynamics/exaspim-swc-processing),
 installed by `environment/Dockerfile`. This capsule contains only Code Ocean glue.
