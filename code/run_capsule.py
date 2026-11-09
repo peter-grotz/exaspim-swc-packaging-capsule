@@ -19,6 +19,7 @@ from exaspim_swc_processing.parent_metadata import (
     ParentMetadataNotFoundError,
     resolve_parent_metadata,
 )
+from exaspim_swc_processing.quality_control import discover_quality_control
 from exaspim_swc_processing.sources import default_sources, upgrade_data_description
 from exaspim_swc_processing.stage import PROCESSED_DATASET_FILE
 
@@ -136,6 +137,9 @@ def run() -> int:
     if not parent.data_description.modalities and args.modalities:
         overrides["modalities"] = [m.strip() for m in args.modalities.split(",") if m.strip()]
 
+    quality_control = discover_quality_control(DATA_DIR)
+    logger.info("Found quality control for %d cell(s)", len(quality_control))
+
     result = package_cells(
         DATA_DIR,
         RESULTS_DIR,
@@ -144,11 +148,18 @@ def run() -> int:
         pipeline,
         creation_time=started,
         overrides=overrides,
+        quality_control=quality_control,
     )
 
     for cell in result.skipped:
         logger.warning("Skipped %s: %s", cell.reconstruction.stem, cell.reason)
-    logger.info("Packaged %d cell(s), skipped %d", len(result.packaged), len(result.skipped))
+    with_qc = sum(cell.has_quality_control for cell in result.packaged)
+    logger.info(
+        "Packaged %d cell(s) (%d with quality control), skipped %d",
+        len(result.packaged),
+        with_qc,
+        len(result.skipped),
+    )
     return 0
 
 
