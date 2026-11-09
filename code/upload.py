@@ -1,16 +1,4 @@
-"""Upload packaged cells to S3, one folder per cell, without overwriting or deleting.
-
-Each file is checked before anything is written:
-
-* absent: uploaded with ``IfNoneMatch="*"``, so S3 itself refuses the write if the key
-  appears in the meantime, and with its SHA-256, which S3 verifies on receipt;
-* present with the same SHA-256: skipped, so a rerun after a partial upload is safe;
-* present with other content, or with no checksum to compare: a conflict, and nothing in
-  that cell is written.
-
-A cell's metadata goes up last, so a folder without ``data_description.json`` is visibly
-incomplete. Nothing here deletes.
-"""
+"""Upload packaged cells to S3, one folder per cell."""
 
 from __future__ import annotations
 
@@ -36,10 +24,8 @@ CONFLICT = "conflict"
 ERROR = "error"
 
 LAST = ("processing.json", "data_description.json")
-"""Written after everything else, in this order."""
 
 MAX_PUT_BYTES = 5 * 1024**3
-"""S3's limit for a single PUT; larger files would need a multipart upload."""
 
 
 @dataclass(frozen=True)
@@ -135,11 +121,7 @@ def upload_cell(client, bucket: str, prefix: str, cell_dir: Path, dry_run: bool)
 def upload_cells(
     client, destination: str, cell_dirs: list[Path], mode: str, manifest: Path
 ) -> bool:
-    """Upload every cell, write the manifest, and return whether all of it succeeded.
-
-    The manifest is written even when an unexpected error (e.g. access denied) stops the
-    run, so it always records what was written before that.
-    """
+    """Upload every cell, write the manifest, and return whether all of it succeeded."""
     bucket, prefix = parse_destination(destination)
     dry_run = mode == DRY_RUN
     entries: list[Entry] = []

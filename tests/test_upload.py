@@ -1,4 +1,4 @@
-"""Upload never overwrites, never deletes, and writes metadata last."""
+"""Tests for upload.py."""
 
 import json
 
