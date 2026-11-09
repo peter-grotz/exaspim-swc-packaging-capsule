@@ -5,7 +5,7 @@ set -ex
 pip list > /results/pip_list.txt
 
 # Code Ocean's App Builder passes its parameters as ordered values, not flags:
-#   ./run <parent_asset> <modalities>
+#   ./run <parent_asset> <modalities> <s3_destination> <upload_mode>
 # A direct command-line invocation passes flags instead. Accept both, so the same
 # entry point works from the pipeline and from a shell. Blank slots are dropped: a stage
 # with no parameters set receives only empty strings, which argparse would reject.
@@ -13,6 +13,8 @@ if [ "${1#-}" = "${1:-}" ]; then
   args=()
   [ -n "${1:-}" ] && args+=(--parent-asset "${1}")
   [ -n "${2:-}" ] && args+=(--modalities "${2}")
+  [ -n "${3:-}" ] && args+=(--s3-destination "${3}")
+  [ -n "${4:-}" ] && args+=(--upload-mode "${4}")
   set -- ${args[@]+"${args[@]}"}
 fi
 

@@ -14,6 +14,20 @@
 			"description": "Comma-separated modality abbreviations, used when the parent omits them (default SPIM)",
 			"type": "text",
 			"value_type": "string"
+		},
+		{
+			"id": "s3destination0001",
+			"name": "s3_destination",
+			"description": "s3://bucket/prefix/ to upload each cell folder under, e.g. s3://aind-scratch-data/. Blank: no upload.",
+			"type": "text",
+			"value_type": "string"
+		},
+		{
+			"id": "uploadmode000001",
+			"name": "upload_mode",
+			"description": "dry_run (default) reports what would be uploaded; upload writes it. Never overwrites or deletes.",
+			"type": "text",
+			"value_type": "string"
 		}
 	]
 }
