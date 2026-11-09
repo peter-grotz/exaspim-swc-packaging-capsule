@@ -17,21 +17,9 @@ when not given.
 
 ### Upload to S3
 
-With `s3_destination` set (e.g. `s3://aind-scratch-data/`), each cell folder is
-uploaded as its own folder under it. `upload_mode` is `dry_run` by default, which reports
-what would be written; `upload` writes it. Nothing is ever overwritten or deleted:
-
-- a file that is absent is written with S3's conditional `IfNoneMatch`, and its SHA-256 is
-  verified by S3 on receipt;
-- a file already there with the same SHA-256 is skipped, so a rerun completes a partial
-  upload;
-- a file already there with other content, or with no checksum, is a conflict, and nothing
-  in that cell is written.
-
-`processing.json` and `data_description.json` go up last, so a folder without
-`data_description.json` is incomplete. Every run writes `upload_manifest.json` to `/results`
-with each key, size, SHA-256 and outcome, and exits non-zero on any conflict or error.
-Writes use the AWS credentials attached to the capsule.
+Set `s3_destination` (e.g. `s3://aind-scratch-data/`) to upload each cell folder under it.
+`upload_mode` is `dry_run` by default; set it to `upload` to write. Each run writes
+`upload_manifest.json` to `/results`.
 
 ## Level of Support
 
