@@ -9,14 +9,11 @@ from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 
-DRY_RUN, UPLOAD = "dry_run", "upload"
-MODES = (DRY_RUN, UPLOAD)
+DRY_RUN = "dry_run"
 
 
-def upload_cells(
-    client, destination: str, cell_dirs: list[Path], mode: str, manifest: Path
-) -> bool:
-    """Write every file of every cell under ``destination``; return whether all succeeded."""
+def upload_cells(client, destination: str, cell_dirs: list[Path], manifest: Path) -> bool:
+    """Write each cell's files under ``destination``, or only list them if it is blank."""
     parsed = urlparse(destination)
     bucket, prefix = parsed.netloc, parsed.path.strip("/")
     results = {}
@@ -24,12 +21,15 @@ def upload_cells(
         for path in sorted(p for p in cell_dir.rglob("*") if p.is_file()):
             parts = [prefix, cell_dir.name, path.relative_to(cell_dir).as_posix()]
             key = "/".join(part for part in parts if part)
-            results[key] = DRY_RUN if mode == DRY_RUN else _put(client, bucket, key, path)
-    manifest.write_text(json.dumps({"bucket": bucket, "mode": mode, "files": results}, indent=2))
+            results[key] = _put(client, bucket, key, path) if destination else DRY_RUN
+    manifest.write_text(json.dumps({"destination": destination, "files": results}, indent=2))
     failed = [key for key, status in results.items() if status not in (DRY_RUN, "uploaded")]
     for key in failed:
         logger.error("Not uploaded: s3://%s/%s (%s)", bucket, key, results[key])
-    logger.info("%d file(s) %s to s3://%s/%s", len(results) - len(failed), mode, bucket, prefix)
+    if destination:
+        logger.info("Uploaded %d file(s) to %s", len(results) - len(failed), destination)
+    else:
+        logger.info("Dry run: no s3_destination; %d file(s) listed in %s", len(results), manifest)
     return not failed
 
 
