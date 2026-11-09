@@ -25,7 +25,7 @@ from exaspim_swc_processing.parent_metadata import (
 from exaspim_swc_processing.quality_control import discover_quality_control
 from exaspim_swc_processing.sources import default_sources, upgrade_data_description
 from exaspim_swc_processing.stage import PROCESSED_DATASET_FILE
-from upload import DRY_RUN, MODES, upload_cells
+from upload import upload_cells
 
 DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
 RESULTS_DIR = Path(os.environ.get("RESULTS_DIR", "/results"))
@@ -66,13 +66,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--s3-destination",
         default=os.environ.get("S3_DESTINATION", ""),
-        help="s3://bucket/prefix/ to upload each cell folder under. Blank: no upload.",
-    )
-    parser.add_argument(
-        "--upload-mode",
-        default=os.environ.get("UPLOAD_MODE", "") or DRY_RUN,
-        choices=MODES,
-        help="dry_run reports what would be uploaded; upload writes it.",
+        help="s3://bucket/prefix/ to upload each cell folder under. Blank: dry run.",
     )
     return parser.parse_args()
 
@@ -178,13 +172,10 @@ def run() -> int:
         len(result.skipped),
     )
 
-    if not args.s3_destination:
-        return 0
     ok = upload_cells(
-        boto3.client("s3"),
+        boto3.client("s3") if args.s3_destination else None,
         args.s3_destination,
         [cell.directory for cell in result.packaged],
-        args.upload_mode,
         RESULTS_DIR / "upload_manifest.json",
     )
     return 0 if ok else 1

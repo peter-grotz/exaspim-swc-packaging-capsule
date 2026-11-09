@@ -18,14 +18,7 @@
 		{
 			"id": "s3destination0001",
 			"name": "s3_destination",
-			"description": "s3://bucket/prefix/ to upload each cell folder under, e.g. s3://aind-scratch-data/. Blank: no upload.",
-			"type": "text",
-			"value_type": "string"
-		},
-		{
-			"id": "uploadmode000001",
-			"name": "upload_mode",
-			"description": "dry_run (default) reports what would be uploaded; upload writes it.",
+			"description": "s3://bucket/prefix/ to upload each cell folder under, e.g. s3://aind-scratch-data/. Blank: dry run, no upload.",
 			"type": "text",
 			"value_type": "string"
 		}
