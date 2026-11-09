@@ -18,8 +18,8 @@ when not given.
 ### Upload to S3
 
 Set `s3_destination` (e.g. `s3://aind-scratch-data/`) to upload each cell folder under it.
-`upload_mode` is `dry_run` by default; set it to `upload` to write. Each run writes
-`upload_manifest.json` to `/results`.
+Left blank, the run is a dry run: nothing is written to S3. Either way, `upload_manifest.json`
+in `/results` lists every file's key and outcome.
 
 ## Level of Support
 
