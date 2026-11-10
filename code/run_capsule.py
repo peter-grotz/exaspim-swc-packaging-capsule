@@ -22,9 +22,10 @@ from exaspim_swc_processing.parent_metadata import (
     ParentMetadataNotFoundError,
     resolve_parent_metadata,
 )
+from exaspim_swc_processing.precomputed import conversion_process
 from exaspim_swc_processing.quality_control import discover_quality_control
 from exaspim_swc_processing.sources import default_sources, upgrade_data_description
-from exaspim_swc_processing.stage import PROCESSED_DATASET_FILE
+from exaspim_swc_processing.stage import PROCESSED_DATASET_FILE, resolve_code
 from upload import upload_cells
 
 DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
@@ -123,7 +124,10 @@ def run() -> int:
     args = parse_args()
     started = datetime.now(LOCAL_TIME)
 
+    # Packaging converts each cell's SWCs to precomputed skeletons, which is new data, so
+    # the conversion is recorded after the upstream stages.
     stage_processes = load_stage_processes(DATA_DIR)
+    stage_processes.append(conversion_process(resolve_code(), started))
     parent_asset = args.parent_asset or infer_parent_asset(DATA_DIR)
     if not parent_asset:
         logger.error(
@@ -160,6 +164,9 @@ def run() -> int:
         creation_time=started,
         overrides=overrides,
         quality_control=quality_control,
+        # Where upload_cells puts each cell, so QC references to the cell's precomputed
+        # skeletons can be made absolute. Blank (a dry run) leaves them relative.
+        destination=args.s3_destination or None,
     )
 
     for cell in result.skipped:
