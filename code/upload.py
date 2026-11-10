@@ -10,6 +10,13 @@ from botocore.exceptions import ClientError
 logger = logging.getLogger(__name__)
 
 DRY_RUN = "dry_run"
+JSON = "application/json"
+BINARY = "application/octet-stream"
+
+
+def content_type(path: Path) -> str:
+    """JSON for metadata and the ``info`` files of precomputed sources; bytes otherwise."""
+    return JSON if path.suffix == ".json" or path.name == "info" else BINARY
 
 
 def upload_cells(client, destination: str, cell_dirs: list[Path], manifest: Path) -> bool:
@@ -36,7 +43,13 @@ def upload_cells(client, destination: str, cell_dirs: list[Path], manifest: Path
 def _put(client, bucket: str, key: str, path: Path) -> str:
     """Write one file unless the key already exists."""
     try:
-        client.put_object(Bucket=bucket, Key=key, Body=path.read_bytes(), IfNoneMatch="*")
+        client.put_object(
+            Bucket=bucket,
+            Key=key,
+            Body=path.read_bytes(),
+            ContentType=content_type(path),
+            IfNoneMatch="*",
+        )
     except ClientError as error:
         code = error.response["Error"]["Code"]
         return "exists" if code == "PreconditionFailed" else code

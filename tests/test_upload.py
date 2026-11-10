@@ -38,12 +38,25 @@ def test_an_existing_object_is_not_replaced(s3, cell, tmp_path):
     assert json.loads(manifest.read_text())["files"][key] == "exists"
 
 
+def test_json_and_precomputed_info_files_are_served_as_json(s3, cell, tmp_path):
+    assert upload.upload_cells(s3, "s3://b/", [cell], tmp_path / "m.json")
+    precomputed = f"{cell.name}/ccf_space_reconstructions/reconstructions.precomputed"
+    assert s3.content_types[f"{precomputed}/info"] == upload.JSON
+    assert s3.content_types[f"{precomputed}/segment_properties/info"] == upload.JSON
+    assert s3.content_types[f"{cell.name}/processing.json"] == upload.JSON
+    assert s3.content_types[f"{precomputed}/1"] == upload.BINARY
+    assert s3.content_types[f"{cell.name}/ccf_space_reconstructions/N001-123456-HP.swc"] == (
+        upload.BINARY
+    )
+
+
 def test_requests_are_valid_for_the_pinned_botocore(cell, tmp_path):
     client = boto3.client("s3", region_name="us-west-2", aws_access_key_id="x",
                           aws_secret_access_key="x")
     with Stubber(client) as stub:
         for name in sorted(files_of(cell)):
             stub.add_response("put_object", {}, {"Bucket": "b", "Key": f"{cell.name}/{name}",
-                                                 "Body": ANY, "IfNoneMatch": "*"})
+                                                 "Body": ANY, "ContentType": ANY,
+                                                 "IfNoneMatch": "*"})
         assert upload.upload_cells(client, "s3://b/", [cell], tmp_path / "m.json")
         stub.assert_no_pending_responses()
