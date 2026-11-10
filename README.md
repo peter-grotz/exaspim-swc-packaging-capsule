@@ -12,18 +12,24 @@ anywhere under `/data` (any `*quality_control*.json`, matched to the cell by eac
 `swc` tag); a cell without one is still packaged, with a warning. Folder names use Pacific
 time.
 
-Each cell also gets a Neuroglancer precomputed skeleton source per coordinate space, holding
-the reconstruction as segment `1`:
+Each reconstruction folder also gets a Neuroglancer precomputed skeleton source, holding the
+reconstruction as segment `1`. Files are named `<neuron>-<subject>`, without the annotator
+initials, so `N024-841260-DR.swc` is packaged as `N024-841260.swc`:
 
 ```
 <asset>/
-  ccf_space_reconstructions/<stem>.swc
+  ccf_space_reconstructions/N024-841260.swc
   ccf_space_reconstructions/reconstructions.precomputed/        # from the CCF SWC
-  specimen_space_reconstructions/refined/<stem>.swc
-  specimen_space_reconstructions/resampled/<stem>.swc
+  specimen_space_reconstructions/N024-841260.swc                # resampled (main)
+  specimen_space_reconstructions/N024-841260_dense.swc          # refined
   specimen_space_reconstructions/reconstructions.precomputed/   # from the resampled SWC
+  raw_reconstructions/N024-841260.swc                           # from refinement/raw
+  raw_reconstructions/reconstructions.precomputed/              # from the raw SWC
   data_description.json  processing.json  quality_control.json
 ```
+
+A raw reconstruction is packaged only alongside the neuron's other reconstructions: one with
+no refined or CCF tracing does not get an asset of its own.
 
 The conversion is recorded in `processing.json` as `precomputed_conversion` (File format
 conversion).

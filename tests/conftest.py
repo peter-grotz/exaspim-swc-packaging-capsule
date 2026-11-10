@@ -35,11 +35,13 @@ def s3():
 def cell(tmp_path):
     folder = tmp_path / "exaSPIM_123456_2026-01-01_00-00-00_reconstruction-N001_2026-02-01_00-00-00"
     for name in (
-        "ccf_space_reconstructions/N001-123456-HP.swc",
+        "ccf_space_reconstructions/N001-123456.swc",
         "ccf_space_reconstructions/reconstructions.precomputed/info",
         "ccf_space_reconstructions/reconstructions.precomputed/1",
         "ccf_space_reconstructions/reconstructions.precomputed/segment_properties/info",
-        "specimen_space_reconstructions/refined/N001-123456-HP.swc",
+        "specimen_space_reconstructions/N001-123456.swc",
+        "specimen_space_reconstructions/N001-123456_dense.swc",
+        "raw_reconstructions/N001-123456.swc",
         "processing.json",
         "data_description.json",
     ):

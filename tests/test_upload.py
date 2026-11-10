@@ -45,7 +45,7 @@ def test_json_and_precomputed_info_files_are_served_as_json(s3, cell, tmp_path):
     assert s3.content_types[f"{precomputed}/segment_properties/info"] == upload.JSON
     assert s3.content_types[f"{cell.name}/processing.json"] == upload.JSON
     assert s3.content_types[f"{precomputed}/1"] == upload.BINARY
-    assert s3.content_types[f"{cell.name}/ccf_space_reconstructions/N001-123456-HP.swc"] == (
+    assert s3.content_types[f"{cell.name}/ccf_space_reconstructions/N001-123456.swc"] == (
         upload.BINARY
     )
 
