@@ -11,4 +11,4 @@ COPY git-ask-pass /
 # new. Bump the SHA whenever the library changes.
 RUN pip install -U --no-cache-dir \
     boto3==1.41.5 botocore==1.41.5 tzdata==2025.2 \
-    "exaspim-swc-processing @ git+https://github.com/AllenNeuralDynamics/exaspim-swc-processing.git@2aedec6a585c0920b5b05efeac3f4cd7db05c096"
+    "exaspim-swc-processing @ git+https://github.com/AllenNeuralDynamics/exaspim-swc-processing.git@fb79e86e0a4276e91d6481f278346a291c43bc82"
